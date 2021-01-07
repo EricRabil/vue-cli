@@ -22,6 +22,7 @@ module.exports = (api, options) => {
       '--copy': `copy url to clipboard on server start`,
       '--stdin': `close when stdin ends`,
       '--mode': `specify env mode (default: development)`,
+      '--modern': `build app targeting modern browsers with auto fallback`,
       '--host': `specify host (default: ${defaults.host})`,
       '--port': `specify port (default: ${defaults.port})`,
       '--https': `use https (default: ${defaults.https})`,
@@ -29,6 +30,13 @@ module.exports = (api, options) => {
       '--skip-plugins': `comma-separated list of plugin names to skip for this run`
     }
   }, async function serve (args) {
+    if (args.modern) {
+      process.env.VUE_CLI_MODERN_MODE = true
+      process.env.VUE_CLI_MODERN_BUILD = true
+    }
+
+    const isLegacyBundle = process.env.VUE_CLI_MODERN_MODE && !process.env.VUE_CLI_MODERN_BUILD
+
     info('Starting development server...')
 
     // although this is primarily a dev server, it is possible that we
@@ -259,7 +267,7 @@ module.exports = (api, options) => {
           : urls.lanUrlForTerminal
 
         console.log()
-        console.log(`  App running at:`)
+        console.log(`  ${isLegacyBundle ? 'Legacy' : 'Modern'} app running at:`)
         console.log(`  - Local:   ${chalk.cyan(urls.localUrlForTerminal)} ${copied}`)
         if (!isInContainer) {
           console.log(`  - Network: ${chalk.cyan(networkUrl)}`)
